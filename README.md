@@ -1,122 +1,140 @@
 # RTI Sahayak
 
-*Police reform, one RTI at a time.* — UiPath AgentHack 2026 (Maestro **Case** track).
+*Police reform, one RTI at a time.* — UiPath AgentHack 2026 (UiPath **Maestro Case** track).
 
-An **audit-first** agent that helps an Indian police-station **Public Information
-Officer (PIO)** answer citizen **Right to Information (RTI Act 2005)** requests: it reads
-the request, retrieves the relevant (synthetic, CCTNS-style) records, decides what
-**§8** allows — citing the exact clause — redacts what is exempt, and drafts a compliant
-reply. A human PIO approves in **Action Center** before anything is sent. Every decision,
-citation, and redaction is logged to an append-only audit trail.
+## Project Description
 
-Each reasoning step runs on **Claude Opus 4.8** or **DeepSeek**, flipped by one setting.
+In India, any citizen can file a **Right to Information (RTI Act 2005)** request, and a
+police-station **Public Information Officer (PIO)** is legally bound to answer within
+**30 days** — deciding what the law lets them disclose, redacting personal data, and
+citing the exact section of the Act. Get it wrong and the cost is real: a leaked
+informant's identity, or a personal **₹25,000 penalty** on the officer.
 
-## What runs where (UiPath)
+**RTI Sahayak** is an **audit-first agent** that does this reasoning but **never sends
+anything without a human**. For each request it: classifies the requested items,
+retrieves the relevant (synthetic, CCTNS-style) records, decides what **Section 8**
+allows — **quoting the exempting clause word-for-word** so it can't invent law — redacts
+what is exempt (including *hidden coreferent* PII), drafts a compliant reply, and then
+**pauses at an un-bypassable human-approval gate** in UiPath Action Center. A PIO reviews
+the draft, the quote-verified citations, and the redactions, then approves. Every
+decision, citation, and redaction is written to an append-only audit trail.
+
+Each reasoning step runs on **Claude Opus 4.8** (via the UiPath LLM Gateway, keyless) or
+**DeepSeek**, flipped by one environment variable.
+
+## UiPath Components
+
+**Used in this submission (in the code / deployed):**
 
 | Concern | UiPath component |
 |---|---|
-| Reasoning agent | **Coded agent** — LangGraph via `uipath-langchain`, on Automation Cloud |
-| Orchestration / case lifecycle | **Maestro** (Case) |
-| Human approval (un-bypassable) | **Action Center** (`interrupt(CreateEscalation(...))`) |
-| State + append-only audit log | **Data Service** (`AuditLog` entity) |
-| ROI / deadline dashboard | **UiPath Apps** |
-| Build assistant | **Claude Code** (see below) |
+| Reasoning agent | **Coded Agent** — LangGraph via `uipath` + `uipath-langchain`, deployed serverless on Automation Cloud |
+| Execution / jobs | **Orchestrator** (process created from the published package; jobs run + suspend) |
+| Human approval (un-bypassable) | **Action Center** — `interrupt(CreateEscalation(...))` raises a generic approval task |
+| LLM (Claude path) | **UiPath LLM Gateway** — `UiPathChat`, no personal API key |
 
-**Agent type:** coded multi-node LangGraph agent (deterministic pipeline + two critic
-loops + an HITL gate), deployed as a UiPath coded agent and invoked by Maestro.
+**Designed for / roadmap (not yet wired in this build — stated honestly):**
+
+| Concern | Target component | Current state |
+|---|---|---|
+| Case lifecycle / orchestration | **Maestro Case** | Agent is built *as* a case workflow; not yet deployed inside a Maestro Case canvas |
+| Append-only audit store | **Data Service** (`AuditLog` entity) | Currently written to a JSONL sink + in-state list; Data Service entity write is roadmap |
+| Deadline / penalty ROI dashboard | **UiPath Apps** | Roadmap |
+
+## Agent Type
+
+**Coded Agent** (not low-code). A deterministic, multi-node **LangGraph** pipeline (two
+self-repair *critic* loops + an HITL gate), packaged and published as a UiPath coded
+agent via the `uipath` CLI. No Agent Builder / low-code agent is used.
 
 ## Pipeline
 
 ```
 S1 Intake/Classify → S2 Records Retrieval → S3 Exemption Reasoner (RAG over §8)
-   → S3.5 Citation Critic ──(repair ≤2 / abstain→escalate)
-   → S4 Severability/Redaction (regex → Presidio → LLM)
-   → S4.5 Redaction Critic ──(repair ≤2 / leak→escalate)
+   → S3.5 Citation Critic ──(repair ≤2 / abstain → escalate)
+   → S4 Severability/Redaction (regex → optional Presidio NER → LLM)
+   → S4.5 Redaction Critic ──(repair ≤2 / leak → escalate)
    → S5 Response Drafter → S6 PIO Approval (HITL) → END
 ```
 
-Agentic behaviour (spec §5.1): bounded self-repair loops, **cross-model verification**
-on S3 (Claude vs DeepSeek disagree → force human review), a confidence risk-gate, and
-three-way severability (disclose / exempt / partial).
+Agentic behaviour: bounded self-repair loops, **cross-model verification** on S3 (Claude
+vs DeepSeek disagree → force human review), a confidence risk-gate, and three-way
+severability (disclose / exempt / partial). Tier-2 Presidio NER is optional and disabled
+in the serverless build, so deployed redaction is **regex → LLM**.
 
 ## The model switch
 
-One env var flips every node:
-
 ```bash
-export RTI_PROVIDER=deepseek   # everything on DeepSeek (bring-your-own key)
-export RTI_PROVIDER=claude     # everything on Claude via UiPath LLM Gateway (no key; needs `uipath auth`)
+export RTI_PROVIDER=claude     # every node on Claude via UiPath LLM Gateway (no key; needs `uipath auth`)
+export RTI_PROVIDER=deepseek   # every node on DeepSeek (bring-your-own DEEPSEEK_API_KEY)
 ```
 
-- **Claude → UiPath LLM Gateway**, no personal key (UiPath bills it).
-- **DeepSeek → your `DEEPSEEK_API_KEY`** (not in the gateway).
-- Pin a single node in `config.yaml` under `nodes:`; turn on the S3 ensemble guard with
-  `cross_check: [exemption_reasoner]`.
+Pin a single node in [config.yaml](config.yaml) under `nodes:`; enable the S3 ensemble
+guard with `cross_check: [exemption_reasoner]`. See [src/rti_sahayak/models.py](src/rti_sahayak/models.py).
 
-See [config.yaml](config.yaml) and [src/rti_sahayak/models.py](src/rti_sahayak/models.py).
+## Setup Instructions (for judging)
 
-## Setup
-
-Requires **Python 3.11–3.12** for the full UiPath runtime (the SDK targets ≤3.12; the
-keyless test gate also runs on 3.14).
+Requires **Python 3.11–3.12** (the UiPath runtime targets ≤3.12). Uses [uv](https://docs.astral.sh/uv/).
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e .                 # installs uipath, uipath-langchain, langchain, etc.
-cp .env.example .env             # set RTI_PROVIDER + DEEPSEEK_API_KEY
+# 1. Install dependencies from the lockfile (reproducible)
+uv sync --extra dev
+
+# 2. Fastest verification — keyless deterministic test gate (NO API key, NO cloud):
+uv run pytest -q                     # expect: 30 passed
+
+# 3. Run the agent locally on the demo case (it suspends at the human-approval gate):
+cp .env.example .env                 # set RTI_PROVIDER (+ DEEPSEEK_API_KEY if using deepseek)
+uv run uipath run agent --file demo_input.json
 ```
 
-UiPath lifecycle:
+**Run it on UiPath Automation Cloud (the full demo):**
 
 ```bash
-uipath auth                      # needed for the Claude/gateway path
-uipath init
-uipath run agent '{"rti_id":"st02","request_text":"...","received_date":"2026-03-20","records_ref":"rs_fir_witness_status"}'
-uipath pack
-uipath publish --my-workspace
+uv run uipath auth                   # log into the tenant (needed for the Claude/gateway path)
+uv lock                              # IMPORTANT: re-lock after any version bump, before pack
+uv run uipath pack
+uv run uipath publish                # publishes the package to the tenant feed
 ```
 
-> The exact gateway model string (`claude-opus-4-8` in config.yaml) is the one runtime
-> value to confirm against the discovery endpoint after `uipath auth`.
+Then in **Orchestrator**: create a process from the published `rti-sahayak` package, set
+`RTI_PROVIDER` (and `DEEPSEEK_API_KEY` if using DeepSeek), **Start** a job with the
+contents of [demo_input.json](demo_input.json). The job runs S1–S5 (~10s) and **suspends**
+at S6 — open the task in **Action Center**, review, and **Approve** to let it complete.
+
+> Packaging note: the serverless runtime installs with `uv sync --locked`, so `uv.lock`
+> must match `pyproject.toml`. Always re-lock after a version bump before `uipath pack`.
 
 ## Validation
 
-Demo-level but with real rigor (spec §9).
-
 ```bash
-# Tier-1 deterministic invariants — CI gate, NO API key required:
-pytest -q
-
-# Full harness: invariants + Tier-2 metrics + scorecard, N runs per config:
-python eval/run.py --config all-deepseek --n 3
-python eval/run.py --config mix --cross-check          # S3 ensemble guard on
-python eval/run.py --no-pipeline                       # deterministic guard proofs only
+uv run pytest -q                                   # Tier-1 invariants — keyless CI gate
+uv run python eval/run.py --config all-deepseek --n 3   # invariants + Tier-2 metrics + scorecard
+uv run python eval/run.py --no-pipeline                 # deterministic guard proofs only
 ```
 
-- **Tier-1 invariants** (must be 100%, model-independent): provenance exists, every
-  citation quote-verifies, the pipeline pauses at HITL, zero PII leak.
+- **Tier-1 invariants** (100%, model-independent): provenance exists, every citation
+  quote-verifies, the pipeline pauses at HITL, zero PII leak.
 - **8 stratified + 6 seeded-fault** cases in [eval/cases/](eval/cases/); each seeded fault
   maps 1:1 to the guard it must trip.
-- `scorecard.md` compares model configs — invariants stay green while quality/cost shift.
 
 ## Layout
 
 ```
-config.yaml · langgraph.json · pyproject.toml
+config.yaml · langgraph.json · pyproject.toml · demo_input.json
 src/rti_sahayak/  graph.py  models.py  state.py  rag.py  redaction.py  audit.py  nodes/
 corpus/  rti_act_s8.jsonl  records/*.json
 eval/  run.py  invariants.py  metrics.py  cases/*.yaml
-tests/test_invariants.py
+tests/  test_invariants.py  test_rl.py
 ```
 
 ## Built with Claude Code
 
 The Python (graph, nodes, RAG, redaction, audit, eval harness, synthetic corpus) was
-authored with **Claude Code** as the coding agent; the UiPath shell (Maestro Case,
-Action Center, Data Service, Apps) is wired in UiPath Studio Web / Automation Cloud.
+authored with **Claude Code** as the coding agent.
 
 ## Caveats
 
-Synthetic data only; live CCTNS integration is future work. Confidence prioritises human
-attention — it never auto-sends. The audit log is for provenance/observability, not
-tamper-evidence. License: [MIT](LICENSE).
+Synthetic data only; live CCTNS integration is authorized future work (there is no public
+CCTNS API). Confidence prioritises human attention — it never auto-sends. The audit log is
+for provenance/observability, not tamper-evidence. License: [MIT](LICENSE).

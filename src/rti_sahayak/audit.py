@@ -1,8 +1,9 @@
 """Append-only audit log writer (spec s8 — the audit-first differentiator).
 
-Local JSONL sink for dev + eval; in the deployed agent the same AuditEntry rows are
-written to a UiPath Data Service `AuditLog` entity (append-only). The audit list also
-lives in graph state so eval/invariants can read it without a sink.
+Writes every AuditEntry to an append-only JSONL sink (path via RTI_AUDIT_LOG) and keeps
+the same rows in graph state so eval/invariants can read them without a sink. Mirroring
+these rows into a UiPath Data Service `AuditLog` entity is planned (roadmap), not yet
+wired here.
 """
 from __future__ import annotations
 
