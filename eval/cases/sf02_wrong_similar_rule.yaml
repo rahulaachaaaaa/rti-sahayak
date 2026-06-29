@@ -1,0 +1,10 @@
+id: sf02_wrong_similar_rule
+category: seeded-fault
+rti_text: >-
+  Under the RTI Act 2005 provide the witness statements in FIR 00412/2026.
+records_ref: rs_fir_witness_status
+received_date: "2026-03-20"
+seeded_fault: wrong_similar_rule         # cite a real section but quote a different clause
+guard_targeted: citations_quote_verify
+expected:
+  escalation: true

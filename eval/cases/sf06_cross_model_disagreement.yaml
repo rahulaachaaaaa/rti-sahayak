@@ -1,0 +1,10 @@
+id: sf06_cross_model_disagreement
+category: seeded-fault
+rti_text: >-
+  Under the RTI Act 2005 provide the investigation status of FIR 00412/2026.
+records_ref: rs_fir_witness_status
+received_date: "2026-03-20"
+seeded_fault: cross_model_disagreement   # force S3 model disagreement -> human review
+guard_targeted: forced_human_review
+expected:
+  escalation: true

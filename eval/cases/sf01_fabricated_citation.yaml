@@ -1,0 +1,10 @@
+id: sf01_fabricated_citation
+category: seeded-fault
+rti_text: >-
+  Under the RTI Act 2005 provide the investigation status of FIR 00412/2026.
+records_ref: rs_fir_witness_status
+received_date: "2026-03-20"
+seeded_fault: fabricated_citation        # inject a citation whose quote is not in s8
+guard_targeted: citations_quote_verify
+expected:
+  escalation: true

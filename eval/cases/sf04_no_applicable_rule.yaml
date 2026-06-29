@@ -1,0 +1,10 @@
+id: sf04_no_applicable_rule
+category: seeded-fault
+rti_text: >-
+  Under the RTI Act 2005 provide records this station does not hold.
+records_ref: rs_empty
+received_date: "2026-03-10"
+seeded_fault: no_applicable_rule
+guard_targeted: escalation
+expected:
+  escalation: true

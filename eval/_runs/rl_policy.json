@@ -1,0 +1,17 @@
+{
+  "disclose": {
+    "tau": 0.55,
+    "n": 3,
+    "last_reward": 1.0
+  },
+  "mixed": {
+    "tau": 0.7862613333333334,
+    "n": 4,
+    "last_reward": 0.0
+  },
+  "exempt": {
+    "tau": 0.634,
+    "n": 1,
+    "last_reward": 0.0
+  }
+}

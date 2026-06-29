@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Agent",
+  "Name": "rti-sahayak",
+  "Description": "RTI Sahayak \u2014 audit-first agent that helps an Indian police-station PIO answer RTI requests under the RTI Act 2005. UiPath AgentHack 2026.",
+  "MainFile": null
+}

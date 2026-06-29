@@ -1,0 +1,32 @@
+# config.yaml — model wiring. The GLOBAL SWITCH is the RTI_PROVIDER env var.
+#
+#   export RTI_PROVIDER=deepseek   # flip EVERY node/project to DeepSeek at once
+#   export RTI_PROVIDER=claude     # flip EVERY node/project to Claude (UiPath Gateway)
+#
+# Claude  -> UiPath LLM Gateway, NO personal key (UiPath bills the calls; needs `uipath auth`).
+# DeepSeek-> your own DEEPSEEK_API_KEY (bring-your-own; not in the gateway).
+
+default: ${RTI_PROVIDER:-claude}     # used when RTI_PROVIDER is unset
+on_failure: fallback_to_default      # provider error / malformed JSON -> auto-retry on `default`
+
+providers:
+  claude:
+    type: uipath_gateway
+    model: anthropic.claude-opus-4-8   # verified against the LLM Gateway normalized model list
+  deepseek:
+    type: deepseek
+    model: deepseek-chat             # general; deepseek-reasoner = deeper (no structured-output)
+    api_key_env: DEEPSEEK_API_KEY
+    base_url: https://api.deepseek.com
+
+# nodes: empty -> every node follows the global switch (RTI_PROVIDER).
+# Add a line ONLY to PIN a node to a provider regardless of the global switch.
+nodes: {}
+# nodes:
+#   exemption_reasoner: claude       # example: keep S3 on Claude even when global=deepseek
+#   intake_classify:    deepseek
+
+# cross_check: run a high-stakes node on BOTH providers; disagreement -> force human review.
+# Toggle for the demo. Empty list = off.
+cross_check: []
+# cross_check: [exemption_reasoner]

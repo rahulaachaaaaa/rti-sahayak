@@ -1,0 +1,12 @@
+id: st06_escalate_closed_disclose
+category: disclose-closed-case
+rti_text: >-
+  Under the RTI Act 2005 please tell me the current status of FIR No.
+  00188/2025 - whether the investigation is complete and a charge-sheet filed.
+records_ref: rs_closed_disclosable
+received_date: "2026-02-05"
+expected:
+  dispositions: { investigation_status: disclose }
+  escalation: false
+seeded_fault: null
+guard_targeted: null

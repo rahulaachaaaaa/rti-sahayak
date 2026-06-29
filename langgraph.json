@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "agent": "./src/rti_sahayak/graph.py:graph"
+  },
+  "env": ".env"
+}

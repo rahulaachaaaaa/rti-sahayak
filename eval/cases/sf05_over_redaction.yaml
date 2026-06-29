@@ -1,0 +1,12 @@
+id: sf05_over_redaction
+category: seeded-fault
+rti_text: >-
+  Under the RTI Act 2005 provide the public station information.
+records_ref: rs_general_info
+received_date: "2026-03-01"
+seeded_fault: over_redaction             # redact non-PII -> utility loss
+guard_targeted: over_redaction_rate
+expected:
+  escalation: false
+  redactions:
+    - { record_id: "GEN-PS-SAKET-01", max_spans: 0 }

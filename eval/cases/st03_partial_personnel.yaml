@@ -1,0 +1,14 @@
+id: st03_partial_personnel
+category: partial
+rti_text: >-
+  Under the RTI Act 2005 please provide the service record and the ACR grade
+  for the year 2025 of SI Pooja Verma, Belt No. 1187.
+records_ref: rs_personnel
+received_date: "2026-03-05"
+expected:
+  dispositions: { personnel_record: partial }
+  escalation: false
+  redactions:
+    - { record_id: "PER-SI-1187", max_spans: 6 }
+seeded_fault: null
+guard_targeted: null

@@ -1,0 +1,12 @@
+id: st04_full_exempt
+category: full-exempt
+rti_text: >-
+  Under the RTI Act 2005 provide the complete status and all investigative
+  steps taken so far in FIR No. 00412/2026 (theft of motorcycle).
+records_ref: rs_fir_witness_status
+received_date: "2026-03-22"
+expected:
+  dispositions: { investigation_status: exempt }
+  escalation: false
+seeded_fault: null
+guard_targeted: null

@@ -1,0 +1,46 @@
+[project]
+name = "rti-sahayak"
+version = "0.1.5"
+description = "RTI Sahayak — audit-first agent that helps an Indian police-station PIO answer RTI requests under the RTI Act 2005. UiPath AgentHack 2026."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Rahul Meena" }]
+# UiPath SDK requires >=3.11; runtime is pinned to 3.12 (3.13/3.14 not yet supported by all UiPath deps).
+requires-python = ">=3.11,<3.13"
+
+dependencies = [
+    # --- UiPath coded-agent runtime + LLM Gateway (Claude path, no personal key) ---
+    "uipath>=2.11.13,<2.12.0",
+    "uipath-langchain>=0.13.11,<0.14.0",
+    # --- LangGraph / LangChain core (SDK is on langchain 1.x) ---
+    "langchain>=1.2.15,<2.0.0",
+    "langchain-core>=1.2.27,<2.0.0",
+    "langgraph>=1.1.8,<2.0.0",
+    # --- DeepSeek path (bring-your-own DEEPSEEK_API_KEY) ---
+    "langchain-deepseek>=0.1.4",
+    # --- RAG over RTI Act s8 (local, model-agnostic) ---
+    "langchain-community>=0.3.0",
+    # Redaction: Tier-1 regex (structured Indian PII) + Tier-3 LLM (contextual/coref).
+    # Tier-2 Presidio NER (presidio-analyzer + en_core_web_sm) is optional and was dropped
+    # for the serverless build — redaction.py disables it gracefully when absent.
+    # --- config + IO ---
+    "pyyaml>=6.0",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

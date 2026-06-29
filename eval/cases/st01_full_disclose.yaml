@@ -1,0 +1,13 @@
+id: st01_full_disclose
+category: full-disclose
+rti_text: >-
+  Under the RTI Act 2005 please provide the sanctioned strength of staff at
+  P.S. Saket for 2025-26 and the total number of FIRs registered in 2025.
+records_ref: rs_general_info
+received_date: "2026-03-01"
+expected:
+  dispositions: { general_info: disclose }
+  escalation: false
+  redactions: []
+seeded_fault: null
+guard_targeted: null

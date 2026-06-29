@@ -1,0 +1,10 @@
+id: sf03_hidden_coref_pii
+category: seeded-fault
+rti_text: >-
+  Under the RTI Act 2005 provide the charge-sheet in FIR 00077/2026.
+records_ref: rs_coref_pii
+received_date: "2026-03-12"
+seeded_fault: hidden_coref_pii           # leave structured PII unredacted in a record
+guard_targeted: zero_pii_leak
+expected:
+  escalation: false

@@ -1,0 +1,12 @@
+id: st05_escalate_no_record
+category: escalate-no-rule
+rti_text: >-
+  Under the RTI Act 2005 provide the inter-departmental policy correspondence
+  about traffic-signal AI cameras held by this police station.
+records_ref: rs_empty
+received_date: "2026-03-10"
+expected:
+  dispositions: {}
+  escalation: true
+seeded_fault: null
+guard_targeted: null

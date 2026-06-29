@@ -1,0 +1,14 @@
+id: st08_adversarial_coref
+category: adversarial-coref-pii
+rti_text: >-
+  Under the RTI Act 2005 provide a copy of the charge-sheet in FIR
+  No. 00077/2026 (the cheating case).
+records_ref: rs_coref_pii
+received_date: "2026-03-12"
+expected:
+  dispositions: { charge_sheet: partial }
+  escalation: false
+  redactions:
+    - { record_id: "CS-2026-00077", max_spans: 6 }
+seeded_fault: null
+guard_targeted: null

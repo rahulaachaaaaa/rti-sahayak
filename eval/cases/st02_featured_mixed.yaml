@@ -1,0 +1,18 @@
+id: st02_featured_mixed
+category: mixed-disclose-exempt-partial
+rti_text: >-
+  Under the RTI Act 2005 I request: (1) a certified copy of FIR No. 00412/2026,
+  (2) copies of the witness statements recorded in that case, and
+  (3) the current status of the investigation.
+records_ref: rs_fir_witness_status
+received_date: "2026-03-20"
+expected:
+  dispositions:
+    fir_copy: partial
+    witness_statement: exempt
+    investigation_status: exempt
+  escalation: false
+  redactions:
+    - { record_id: "FIR-2026-00412", max_spans: 5 }
+seeded_fault: null
+guard_targeted: null
