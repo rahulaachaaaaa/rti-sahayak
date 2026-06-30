@@ -1,6 +1,12 @@
 # RTI Sahayak
 
-*Police reform, one RTI at a time.* — UiPath AgentHack 2026 (UiPath **Maestro Case** track).
+*Police reform, one RTI at a time.* — UiPath AgentHack 2026 · Track: **UiPath Maestro Case**.
+
+## Submission Links
+
+- 🎥 **Demo video (≤5 min):** https://youtu.be/I2JscSfypwA
+- 📊 **Presentation deck:** https://docs.google.com/presentation/d/1lNnXYb1A-2QiPLKy8k720E8yAalQID59/edit?usp=sharing
+- 💻 **Repository:** https://github.com/rahulaachaaaaa/rti-sahayak
 
 ## Project Description
 
