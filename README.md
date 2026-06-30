@@ -16,8 +16,9 @@ police-station **Public Information Officer (PIO)** is legally bound to answer w
 citing the exact section of the Act. Get it wrong and the cost is real: a leaked
 informant's identity, or a personal **₹25,000 penalty** on the officer.
 
-**RTI Sahayak** is an **audit-first agent** that does this reasoning but **never sends
-anything without a human**. For each request it: classifies the requested items,
+**RTI Sahayak** treats every RTI request as a **case** and runs its full lifecycle as one
+long-running, suspendable workflow — an **audit-first agent** that does this reasoning but
+**never sends anything without a human**. For each case it: classifies the requested items,
 retrieves the relevant (synthetic, CCTNS-style) records, decides what **Section 8**
 allows — **quoting the exempting clause word-for-word** so it can't invent law — redacts
 what is exempt (including *hidden coreferent* PII), drafts a compliant reply, and then
@@ -28,23 +29,38 @@ decision, citation, and redaction is written to an append-only audit trail.
 Each reasoning step runs on **Claude Opus 4.8** (via the UiPath LLM Gateway, keyless) or
 **DeepSeek**, flipped by one environment variable.
 
+## Track: Agentic Case Management (UiPath Maestro Case)
+
+Each RTI request is a **case**, and the coded agent **orchestrates its entire lifecycle** as
+a single suspendable workflow on the UiPath Platform:
+
+```
+intake/classify → retrieve case records → exemption reasoning → redaction
+   → draft reply → PIO approval (human case task) → close
+```
+
+The agent suspends mid-case at a human task and resumes on approval — exactly the
+long-running, human-in-the-loop case pattern this track targets. **All orchestration and
+agent logic run through the UiPath Platform** (coded agent on Orchestrator, human task in
+Action Center, reasoning via the LLM Gateway).
+
 ## UiPath Components
 
-**Used in this submission (in the code / deployed):**
+**Built and running in this submission:**
 
 | Concern | UiPath component |
 |---|---|
-| Reasoning agent | **Coded Agent** — LangGraph via `uipath` + `uipath-langchain`, deployed serverless on Automation Cloud |
-| Execution / jobs | **Orchestrator** (process created from the published package; jobs run + suspend) |
-| Human approval (un-bypassable) | **Action Center** — `interrupt(CreateEscalation(...))` raises a generic approval task |
-| LLM (Claude path) | **UiPath LLM Gateway** — `UiPathChat`, no personal API key |
+| Case orchestration / lifecycle | **Coded Agent** — LangGraph (`uipath` + `uipath-langchain`), the agent *is* the case workflow; deployed serverless on Automation Cloud |
+| Long-running execution / jobs | **Orchestrator** — process published from the package; jobs run **and suspend** mid-case |
+| Human-in-the-loop case task (un-bypassable) | **Action Center** — `interrupt(CreateEscalation(...))` raises the PIO approval task |
+| LLM reasoning (keyless) | **UiPath LLM Gateway** — `UiPathChat`, no personal API key |
 
-**Designed for / roadmap (not yet wired in this build — stated honestly):**
+**Roadmap (stated honestly — not in this build):**
 
 | Concern | Target component | Current state |
 |---|---|---|
-| Case lifecycle / orchestration | **Maestro Case** | Agent is built *as* a case workflow; not yet deployed inside a Maestro Case canvas |
-| Append-only audit store | **Data Service** (`AuditLog` entity) | Currently written to a JSONL sink + in-state list; Data Service entity write is roadmap |
+| Visual case canvas | **Maestro Case** | Workflow is built to drop into a Maestro Case canvas; currently orchestrated as the coded agent above |
+| Append-only audit store | **Data Service** (`AuditLog` entity) | Written to a JSONL sink + in-state list today; Data Service entity write is roadmap |
 | Deadline / penalty ROI dashboard | **UiPath Apps** | Roadmap |
 
 ## Agent Type
